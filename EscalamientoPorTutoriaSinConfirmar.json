@@ -1,0 +1,214 @@
+{
+  "name": "EscalamientoPorTutoriaSinConfirmar",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "597b4045-8584-4996-8aa5-cdadb41ca0ef",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vv-BH931MDOoSBHccCF3U-o9dXwY4Dbx8ILMqvgtkWA",
+          "mode": "list",
+          "cachedResultName": "DataaBase_ChatBot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vv-BH931MDOoSBHccCF3U-o9dXwY4Dbx8ILMqvgtkWA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 562212608,
+          "mode": "list",
+          "cachedResultName": "tutorias_asignadas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vv-BH931MDOoSBHccCF3U-o9dXwY4Dbx8ILMqvgtkWA/edit#gid=562212608"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7295eedb-5262-460f-be8f-f4f2e50f45df",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MpwPn2poBJZSS5Sn",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "15ac08c0-b44d-4b39-83fe-90d211a0bf88",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "7c52bb8c-8c4c-43fa-900c-091fd1c104e7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ahora = new Date();\n\nconst resultado = [];\n\nfor (const item of $input.all()) {\n\n  const datos = item.json;\n\n  // Normalizar estado\n  const estado = String(\n    datos.Estado ??\n    datos.estado ??\n    ''\n  ).trim().toLowerCase();\n\n  // Solo nos interesan tutorías ASIGNADAS\n  if (estado !== 'asignada') {\n    continue;\n  }\n\n  // Obtener fecha/hora de creación\n  const fechaCreacion =\n    datos.Hora_Creacion ??\n    datos.Hora_Creación ??\n    datos.Fecha_Hora_Creacion ??\n    datos.Fecha_Hora_Creación ??\n    datos['Hora de creación'] ??\n    datos['Hora de Creacion'];\n\n  if (!fechaCreacion) {\n    continue;\n  }\n\n  const fecha = new Date(fechaCreacion);\n\n  // Verificar fecha válida\n  if (isNaN(fecha.getTime())) {\n    continue;\n  }\n\n  // Diferencia en minutos\n  const diferenciaMs = ahora.getTime() - fecha.getTime();\n  const diferenciaMinutos = diferenciaMs / (1000 * 60);\n\n  // Más de 45 minutos sin confirmar\n  if (diferenciaMinutos > 45) {\n\n    resultado.push({\n      json: {\n        ...datos,\n        minutos_retraso: Math.floor(diferenciaMinutos),\n        fecha_evaluacion: ahora.toISOString()\n      }\n    });\n\n  }\n}\n\nreturn resultado;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "51ee4d3c-cb31-4bc3-86fa-2022f3750f5e",
+      "name": "Filtrar tutorías retrasadas",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const tutorias = $input.all();\n\nconst ids = tutorias.map(item => {\n  const datos = item.json;\n\n  return (\n    datos.ID_Tutoria ??\n    datos.Id_Tutoria ??\n    datos.ID ??\n    datos.id ??\n    'SIN_ID'\n  );\n});\n\nconst detalle = tutorias.map(item => {\n\n  const datos = item.json;\n\n  const id =\n    datos.ID_Tutoria ??\n    datos.Id_Tutoria ??\n    datos.ID ??\n    datos.id ??\n    'SIN_ID';\n\n  const materia =\n    datos.Materia ??\n    datos.materia ??\n    'Sin materia';\n\n  const estado =\n    datos.Estado ??\n    datos.estado ??\n    'Asignada';\n\n  const minutos =\n    datos.minutos_retraso ??\n    0;\n\n  return `• ${id} — ${materia} — ${estado} — ${minutos} min`;\n});\n\nconst mensaje = \n`🚨 ATENCIÓN: Tutorías sin confirmar\n\nLas siguientes tutorías llevan más de 45 minutos en estado \"Asignada\":\n\n${detalle.join('\\n')}\n\n📋 IDs detectados:\n${ids.join(', ')}\n\nFavor verificar con el tutor/estudiante.\n\n⏱️ Reporte generado automáticamente por TutorBot.`;\n\nreturn [\n  {\n    json: {\n      cantidad: tutorias.length,\n      ids,\n      mensaje\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "645fdeb0-e0b1-43aa-b4ab-081bbed3938a",
+      "name": "Construir reporte"
+    },
+    {
+      "parameters": {
+        "chatId": "1084703215",
+        "text": "={{ $json.mensaje }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "b5fab4b5-e36c-44bc-abb7-12bddc5b7c3b",
+      "name": "Send a text message",
+      "webhookId": "262b008c-d319-4c22-b715-16f91584960d",
+      "credentials": {
+        "telegramApi": {
+          "id": "3aeK51uuNQnW6kYh",
+          "name": "MyTelegramCredential"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filtrar tutorías retrasadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Construir reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar tutorías retrasadas": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir reporte": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f55bd495-f97b-48d9-8da6-a9ee9b0499aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8d3164d074b123d4738bf2751dfb9c970849b8639846db8d0c657333fc24ef39"
+  },
+  "nodeGroups": [],
+  "id": "KYFOkc0XTlvtg2XK",
+  "tags": []
+}
