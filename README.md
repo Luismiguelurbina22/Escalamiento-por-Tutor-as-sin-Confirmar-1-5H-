@@ -2,9 +2,7 @@
 
 ## Escalamiento por Tutorías sin Confirmar
 
-Se implementó un workflow automatizado en n8n encargado
-de detectar tutorías que permanecen en estado `Asignada`
-durante más de 45 minutos sin confirmación.
+Se implementó un workflow automatizado en n8n encargado de detectar tutorías que permanecen en estado `Asignada` durante más de 45 minutos sin confirmación.
 
 ## Lógica implementada
 
@@ -18,12 +16,7 @@ durante más de 45 minutos sin confirmación.
 
 ## Flujo
 
-Schedule Trigger
-→ Google Sheets
-→ Filtrar tutorías retrasadas
-→ IF
-→ Construir reporte
-→ Telegram
+Schedule Trigger → Google Sheets → Filtrar tutorías retrasadas → IF → Construir reporte → Telegram
 
 ## Mensaje de alerta
 
@@ -33,8 +26,9 @@ Las siguientes tutorías llevan más de 45 min sin confirmar.
 
 Favor verificar con el tutor/estudiante.
 
+### Captura de Alerta en Telegram
+![Alerta de TutorBot en Telegram](WhatsApp%20Image%202026-09-08%20at%205.02.17%20PM.jpeg)
+
 ## Resultado
 
-El sistema permite detectar automáticamente tutorías
-que pueden quedar olvidadas en estado `Asignada` y
-escalar el caso a coordinación.
+El sistema permite detectar automáticamente tutorías que pueden quedar olvidadas en estado `Asignada` y escalar el caso a coordinación.
