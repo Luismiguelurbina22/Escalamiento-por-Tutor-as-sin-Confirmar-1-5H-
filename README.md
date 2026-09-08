@@ -1,34 +1,45 @@
-# Update: Examen 1
+# TutorBot — Escalamiento de Tutorías sin Confirmar
 
-## Escalamiento por Tutorías sin Confirmar
+## Examen 1 — Update
 
-Se implementó un workflow automatizado en n8n encargado de detectar tutorías que permanecen en estado `Asignada` durante más de 45 minutos sin confirmación.
+## 📌 Descripción
 
-## Lógica implementada
+Se implementó un workflow automatizado en **n8n** que detecta tutorías que permanecen en estado `Asignada` durante más de **45 minutos** sin confirmación, y escala el caso a coordinación mediante **Telegram**.
 
-1. Un Schedule Trigger ejecuta el workflow cada 30 minutos.
-2. Se consultan las tutorías almacenadas en Google Sheets.
+## ⚙️ Lógica implementada
+
+1. Un **Schedule Trigger** ejecuta el workflow cada 30 minutos.
+2. Se consultan las tutorías almacenadas en **Google Sheets**.
 3. Se filtran únicamente las tutorías cuyo estado sea `Asignada`.
 4. Se calcula el tiempo transcurrido desde la creación de la tutoría.
-5. Si han transcurrido más de 45 minutos, la tutoría se considera retrasada.
+5. Si han transcurrido más de 45 minutos, la tutoría se considera **retrasada**.
 6. Se genera un reporte con los IDs de las tutorías detectadas.
-7. El reporte es enviado automáticamente a coordinación mediante Telegram.
+7. El reporte se envía automáticamente a coordinación mediante **Telegram**.
 
-## Flujo
+## 🔄 Flujo
 
+```
 Schedule Trigger → Google Sheets → Filtrar tutorías retrasadas → IF → Construir reporte → Telegram
+```
 
-## Mensaje de alerta
+## 💬 Mensaje de alerta
 
+```
 🚨 ATENCIÓN: Tutorías sin confirmar
 
 Las siguientes tutorías llevan más de 45 min sin confirmar.
 
 Favor verificar con el tutor/estudiante.
+```
 
-### Captura de Alerta en Telegram
-![Alerta de TutorBot en Telegram](WhatsApp%20Image%202026-09-08%20at%205.02.17%20PM.jpeg)
+## 📸 Captura de alerta en Telegram
 
-## Resultado
+![Alerta de TutorBot en Telegram](alerta-telegram-tutorbot.jpeg)
 
-El sistema permite detectar automáticamente tutorías que pueden quedar olvidadas en estado `Asignada` y escalar el caso a coordinación.
+## ✅ Resultado
+
+El sistema permite detectar automáticamente tutorías que pueden quedar olvidadas en estado `Asignada` y escalar el caso a coordinación sin intervención manual.
+
+## ⚠️ Nota
+
+En la captura de ejemplo, la tutoría reportada aparece con `SIN ID`, `Sin materia` y `0 min`. Esto sugiere que el registro de origen en Google Sheets tenía campos vacíos (id_tutoria, materia y/o fecha) al momento de la ejecución. Vale la pena validar que esas columnas no queden vacías al crear una tutoría, para que el reporte de escalamiento muestre siempre datos completos.
