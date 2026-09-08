@@ -34,7 +34,7 @@ Favor verificar con el tutor/estudiante.
 
 ## 📸 Captura de alerta en Telegram
 
-![Alerta de TutorBot en Telegram](alerta-telegram-tutorbot.jpeg)
+![Alerta de TutorBot en Telegram](assets/alerta-telegram-tutorbot.jpeg)
 
 ## ✅ Resultado
 
